@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@300;400;600;800&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-white font-sans overflow-x-hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #050510;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #c026d3, #7c3aed);
+    border-radius: 3px;
+  }
+
+  /* Restore default cursor on mobile */
+  @media (max-width: 768px) {
+    body {
+      cursor: auto;
+    }
+  }
+}
+
+/* ============================
+   Lenis Smooth Scroll
+   ============================ */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* ============================
+   Noise Texture Overlay
+   ============================ */
+.noise-overlay::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ============================
+   Glassmorphism Card
+   ============================ */
+.glass-card {
+  background: linear-gradient(135deg, rgba(12, 12, 36, 0.7), rgba(20, 20, 53, 0.5));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(192, 38, 211, 0.15);
+}
+
+/* ============================
+   Text Effects
+   ============================ */
+.text-glow {
+  text-shadow: 0 0 10px rgba(192, 38, 211, 0.5), 0 0 30px rgba(124, 58, 237, 0.3);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 30px rgba(6, 182, 212, 0.3);
+}
+
+/* ============================
+   Scroll Progress Bar
+   ============================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #c026d3, #7c3aed, #06b6d4);
+  z-index: 10000;
+  transform-origin: left;
+}
+
+/* ============================
+   Custom Cursor
+   ============================ */
+.custom-cursor {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(192, 38, 211, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10001;
+  transition: transform 0.15s ease, border-color 0.3s ease, background 0.3s ease;
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+
+.custom-cursor.hovering {
+  transform: scale(2.5);
+  border-color: rgba(6, 182, 212, 0.8);
+  background: rgba(6, 182, 212, 0.1);
+}
+
+.custom-cursor.is-deck {
+  transform: scale(3.5);
+  border-color: rgba(192, 38, 211, 0.4);
+  background: rgba(192, 38, 211, 0.05);
+}
+
+/* ============================
+   Vignette
+   ============================ */
+.vignette::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(5, 5, 16, 0.6) 100%);
+}
+
+/* ============================
+   Section Divider
+   ============================ */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192, 38, 211, 0.4), rgba(124, 58, 237, 0.4), rgba(6, 182, 212, 0.4), transparent);
+}
+
+/* ============================
+   GPU Compositing Hints
+   ============================ */
+.will-change-transform {
+  will-change: transform;
+}
