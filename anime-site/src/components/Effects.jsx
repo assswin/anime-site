@@ -5,50 +5,74 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 // Floating Particles Component
 // ============================
 function FloatingParticles({ themeColor }) {
-  // Reduce particle count on mobile for performance
-  const particleCount = typeof window !== 'undefined' && window.innerWidth < 768 ? 20 : 40;
-  
+  // Further reduce particle count on mobile for performance
+  const particleCount = typeof window !== 'undefined' && window.innerWidth < 768 ? 10 : 20;
+   
+  // Precompute particle data to avoid impure functions during render
   const particles = useMemo(() => {
-    return Array.from({ length: particleCount }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      delay: Math.random() * 5,
-      duration: Math.random() * 10 + 8,
-      color: ['#c026d3', '#7c3aed', '#06b6d4', '#ec4899'][Math.floor(Math.random() * 4)],
-      opacity: Math.random() * 0.4 + 0.1,
-    }))
-  }, [themeColor])
+    // Generate deterministic but varied values for each particle
+    return Array.from({ length: particleCount }, (_, i) => {
+      // Use a simple hash function based on index to generate pseudo-random values
+      const seed = i * 167 + 23; // Simple hash to vary values per particle
+      
+      // Deterministic "random" values based on seed
+      const x = (seed * 97) % 100;
+      const y = (seed * 101) % 100;
+      const size = ((seed * 103) % 20) / 10 + 0.5; // 0.5 to 2.5
+      const delay = ((seed * 107) % 30) / 10; // 0 to 3
+      const duration = 8 + ((seed * 109) % 20) / 10; // 8 to 10
+      const colorIndex = (seed * 113) % 4; // 0 to 3
+      const opacity = ((seed * 127) % 25) / 100 + 0.05; // 0.05 to 0.3
+      
+      return {
+        id: i,
+        x,
+        y,
+        size,
+        delay,
+        duration,
+        color: ['#c026d3', '#7c3aed', '#06b6d4', '#ec4899'][colorIndex],
+        opacity
+      };
+    });
+  }, [themeColor, particleCount])
 
-  return (
+   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            backgroundColor: Math.random() > 0.5 && themeColor ? themeColor : p.color,
-            opacity: p.opacity,
-            filter: `blur(${p.size > 2 ? 1 : 0}px)`,
-          }}
-          animate={{
-            y: [0, -100, -200, -300],
-            x: [0, Math.random() * 60 - 30, Math.random() * 60 - 30, 0],
-            opacity: [p.opacity, p.opacity * 1.5, p.opacity, 0],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-      ))}
+      {particles.map((p) => {
+        // Generate deterministic animation values based on particle properties
+        const seed = p.id * 137 + 17;
+        const xOffset1 = ((seed * 223) % 120) - 60; // -60 to 60
+        const xOffset2 = ((seed * 227) % 120) - 60; // -60 to 60
+        const opacityMultiplier = ((seed * 229) % 100) / 100 + 0.5; // 0.5 to 1.5
+        
+        return (
+          <motion.div
+            key={p.id}
+            className="absolute rounded-full"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: p.size,
+              height: p.size,
+              backgroundColor: (seed % 2 === 0 && themeColor) ? themeColor : p.color,
+              opacity: p.opacity,
+              filter: `blur(${p.size > 2 ? 1 : 0}px)`,
+            }}
+            animate={{
+              y: [0, -100, -200, -300],
+              x: [0, xOffset1, xOffset2, 0],
+              opacity: [p.opacity, p.opacity * opacityMultiplier, p.opacity, 0],
+            }}
+            transition={{
+              duration: p.duration,
+              delay: p.delay,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+        );
+      })}
     </div>
   )
 }

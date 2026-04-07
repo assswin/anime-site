@@ -41,21 +41,36 @@ export default function SectionTransition({ type = 'ink-wash', themeColor }) {
       <div ref={ref} className="relative h-[20vh] overflow-hidden">
         {/* Shatter fragments */}
         <motion.div className="absolute inset-0 flex items-center justify-center" style={{ opacity }}>
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute"
-              style={{
-                width: `${15 + Math.random() * 20}%`,
-                height: `${30 + Math.random() * 40}%`,
-                left: `${i * 16}%`,
-                top: `${Math.random() * 30}%`,
-                background: `linear-gradient(${45 + i * 30}deg, transparent, ${themeColor || '#c026d3'}10, transparent)`,
-                border: `1px solid ${themeColor || '#c026d3'}15`,
-                clipPath: `polygon(${Math.random()*20}% ${Math.random()*20}%, ${80+Math.random()*20}% ${Math.random()*30}%, ${70+Math.random()*30}% ${70+Math.random()*30}%, ${Math.random()*30}% ${70+Math.random()*30}%)`,
-              }}
-            />
-          ))}
+           {[...Array(6)].map((_, i) => {
+             // Use deterministic values based on index instead of Math.random
+             const width = 15 + ((i * 17) % 20); // 15-35%
+             const height = 30 + ((i * 19) % 40); // 30-70%
+             const left = i * 16; // 0, 16, 32, 48, 64, 80, 96...
+             const top = (i * 23) % 30; // 0-29%
+             const angle = 45 + i * 30; // 45, 75, 105, 135, 165, 195, 225...
+             const clipX1 = (i * 29) % 20; // 0-19%
+             const clipX2 = 80 + ((i * 31) % 20); // 80-99%
+             const clipY1 = (i * 37) % 30; // 0-29%
+             const clipY2 = 70 + ((i * 41) % 30); // 70-99%
+             const clipX3 = (i * 43) % 30; // 0-29%
+             const clipY3 = (i * 47) % 30; // 0-29%
+             
+             return (
+               <motion.div
+                 key={i}
+                 className="absolute"
+                 style={{
+                   width: `${width}%`,
+                   height: `${height}%`,
+                   left: `${left}%`,
+                   top: `${top}%`,
+                   background: `linear-gradient(${angle}deg, transparent, ${themeColor || '#c026d3'}10, transparent)`,
+                   border: `1px solid ${themeColor || '#c026d3'}15`,
+                   clipPath: `polygon(${clipX1}% ${clipY1}%, ${clipX2}% ${clipY2}%, ${clipX3}% ${clipY3}%, ${clipX3}% ${clipY3}%, ${clipX3}% ${clipY3}%)`,
+                 }}
+               />
+             );
+           })}
           {/* Center line */}
           <motion.div
             className="absolute h-[1px] top-1/2"

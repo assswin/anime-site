@@ -1,31 +1,39 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useMotionValue, useSpring, useTransform } from 'framer-motion'
 
-// Text scramble effect hook
-function useTextScramble(text, isHovering) {
-  const [displayText, setDisplayText] = useState(text)
+export default function CharacterCard({ character, index, isActive, onSelect }) {
+  const [isHovered, setIsHovered] = useState(false)
+   
+  // Check if we're on mobile to reduce expensive effects
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+   
+  // Text scramble effect - only active on desktop when hovered and active
+  const [displayText, setDisplayText] = useState(character.name)
   const chars = '!<>-_\\/[]{}—=+*^?#アイウエオカキクケコサシスセソ'
   const intervalRef = useRef(null)
 
   useEffect(() => {
-    if (!isHovering) {
-      setDisplayText(text)
+    const shouldScramble = !isMobile && isHovered && isActive
+    
+    if (!shouldScramble) {
+      // Use functional update to avoid potential issues
+      setDisplayText(prev => character.name)
       if (intervalRef.current) clearInterval(intervalRef.current)
       return
     }
 
     let iteration = 0
     intervalRef.current = setInterval(() => {
-      setDisplayText(
-        text
+      setDisplayText(prevText => {
+        return character.name
           .split('')
           .map((letter, index) => {
-            if (index < iteration) return text[index]
+            if (index < iteration) return character.name[index]
             return chars[Math.floor(Math.random() * chars.length)]
           })
           .join('')
-      )
-      if (iteration >= text.length) {
+      })
+      if (iteration >= character.name.length) {
         clearInterval(intervalRef.current)
       }
       iteration += 0.5
@@ -34,45 +42,52 @@ function useTextScramble(text, isHovering) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [isHovering, text])
-
-  return displayText
-}
-
-export default function CharacterCard({ character, index, isActive, onSelect }) {
-  const [isHovered, setIsHovered] = useState(false)
-  const scrambledName = useTextScramble(character.name, isHovered && isActive)
+  }, [isHovered, isActive, isMobile, character.name])
   
-  // 3D Holographic Parallax Physics
+  // Simplified 3D effect for mobile, full effect for desktop
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
-
-  const mouseXSpring = useSpring(mx, { stiffness: 150, damping: 15, mass: 0.5 })
-  const mouseYSpring = useSpring(my, { stiffness: 150, damping: 15, mass: 0.5 })
-
-  // Slight additional rotation on top of the deck tilt
-  const cardRotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-8deg", "8deg"])
-
+  
+  // Reduced physics for mobile
+  const mouseXSpring = useSpring(mx, { 
+    stiffness: isMobile ? 80 : 150, 
+    damping: isMobile ? 10 : 15, 
+    mass: 0.5 
+  })
+  // mouseYSpring kept for potential future use or symmetry
+  const mouseYSpring = useSpring(my, { 
+    stiffness: isMobile ? 80 : 150, 
+    damping: isMobile ? 10 : 15, 
+    mass: 0.5 
+  })
+  
+  // Reduced rotation range for mobile
+  const cardRotateY = useTransform(
+    mouseXSpring, 
+    [-0.5, 0.5], 
+    [isMobile ? "-4deg" : "-8deg", isMobile ? "4deg" : "8deg"]
+  )
+  
   const handleMouseMove = (e) => {
-    if (!isActive) return
+    if (!isActive || isMobile) return // Disable on mobile for performance
     const rect = e.currentTarget.getBoundingClientRect()
     const mouseX = (e.clientX - rect.left) / rect.width - 0.5
     const mouseY = (e.clientY - rect.top) / rect.height - 0.5
     mx.set(mouseX)
     my.set(mouseY)
   }
-
+  
   const handleMouseLeave = () => {
     setIsHovered(false)
     mx.set(0)
     my.set(0)
   }
-
+  
   const handleClick = useCallback(() => {
     if (!isActive) return
     onSelect(character)
   }, [character, onSelect, isActive])
-
+  
   return (
     <motion.div
       layoutId={`card-container-${character.id}`}
@@ -82,7 +97,7 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
       }}
       className={`w-full h-full relative rounded-3xl ${isActive ? 'cursor-pointer cursor-hover-target shadow-2xl focus-visible:ring-2' : ''}`}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => { if(isActive) setIsHovered(true) }}
+      onMouseEnter={() => { if(isActive && !isMobile) setIsHovered(true) }}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       onKeyDown={(e) => { if (isActive && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); handleClick(); } }}
@@ -90,7 +105,7 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
       tabIndex={isActive ? 0 : -1}
       aria-label={`View ${character.name}`}
       aria-expanded={false} // Would be true if open, but this is the trigger
-      whileHover={isActive ? { scale: 1.02 } : {}}
+      whileHover={isActive && !isMobile ? { scale: 1.02 } : {}}
       transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
     >
       {/* Animated gradient border synced with theme color */}
@@ -146,7 +161,7 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
               color: isHovered && isActive ? '#fff' : 'rgba(255, 255, 255, 0.3)'
             }}
           >
-            {scrambledName}
+             {displayText}
           </motion.h2>
 
           <div 

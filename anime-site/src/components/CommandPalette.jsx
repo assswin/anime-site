@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 
 export default function CommandPalette({ characters, onSelectCharacter, onNavigateToCharacter }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -44,8 +44,11 @@ export default function CommandPalette({ characters, onSelectCharacter, onNaviga
   }, [query, characters])
 
   const handleSelect = useCallback((character) => {
-    setIsOpen(false)
-    setQuery('')
+    // Use setTimeout to avoid synchronous setState
+    setTimeout(() => {
+      setIsOpen(false)
+      setQuery('')
+    }, 0)
     if (onSelectCharacter) onSelectCharacter(character)
   }, [onSelectCharacter])
 

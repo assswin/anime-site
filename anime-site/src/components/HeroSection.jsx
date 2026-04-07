@@ -27,8 +27,12 @@ const letterVariants = {
 export default function HeroSection() {
   const title = "ANIME LEGENDS"
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   useEffect(() => {
+    // Disable expensive mouse tracking on mobile
+    if (isMobile) return
+    
     const handleMouseMove = (e) => {
       setMousePos({
         x: (e.clientX / window.innerWidth - 0.5) * 30,
@@ -37,7 +41,7 @@ export default function HeroSection() {
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+  }, [isMobile])
 
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">

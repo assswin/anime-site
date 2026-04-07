@@ -27,12 +27,33 @@
     border-radius: 3px;
   }
 
-  /* Restore default cursor on mobile */
-  @media (max-width: 768px) {
-    body {
-      cursor: auto;
-    }
+/* Restore default cursor on mobile */
+@media (max-width: 768px) {
+  body {
+    cursor: auto;
   }
+  
+  /* Enhanced overlays for mobile */
+  .noise-overlay::after {
+    opacity: 0.015;
+  }
+  
+  .vignette::before {
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(5, 5, 16, 0.8) 100%);
+  }
+  
+  /* Reduce glass effect intensity on mobile for performance */
+  .glass-card {
+    background: linear-gradient(135deg, rgba(12, 12, 36, 0.5), rgba(20, 20, 53, 0.3));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Optimize cursor for touch devices */
+  .custom-cursor {
+    display: none;
+  }
+}
 }
 
 /* ============================

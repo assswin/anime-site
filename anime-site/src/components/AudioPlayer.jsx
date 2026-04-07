@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { audioManager } from '../utils/audioManager'
 import { useCharacter } from '../context/CharacterContext'
 
@@ -11,8 +11,11 @@ export default function AudioPlayer() {
   // Sync mute state with global start signal
   useEffect(() => {
     if (isAudioStarted) {
-      setIsMuted(false)
-      audioManager.setMute(false)
+      // Use setTimeout to avoid synchronous setState
+      setTimeout(() => {
+        setIsMuted(false)
+        audioManager.setMute(false)
+      }, 0)
     }
   }, [isAudioStarted])
 
@@ -30,8 +33,11 @@ export default function AudioPlayer() {
     if (activeCharacter?.audio) {
       const url = activeCharacter.audio
       if (url === currentTrack) return
-      setCurrentTrack(url)
-      audioManager.playBGM(url)
+      // Use setTimeout to avoid synchronous setState
+      setTimeout(() => {
+        setCurrentTrack(url)
+        audioManager.playBGM(url)
+      }, 0)
     }
   }, [activeCardIndex, characters, isAudioStarted, currentTrack])
 

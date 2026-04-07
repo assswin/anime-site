@@ -174,21 +174,34 @@ function LiquidPlane({ mouse, themeColor }) {
 
 export default function WebGLBackground({ themeColor }) {
   const mouse = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   useEffect(() => {
+    // Disable mouse tracking on mobile to save performance
+    if (isMobile) return
+    
     const handleMouseMove = (e) => {
       mouse.current.x = e.clientX
       mouse.current.y = e.clientY
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+  }, [isMobile])
 
   return (
     <div className="fixed inset-0 z-[-1] pointer-events-none">
       <Canvas>
         <PerspectiveCamera makeDefault position={[0, 0, 2]} />
-        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+        {/* Reduce star count and complexity on mobile */}
+        <Stars 
+          radius={isMobile ? 80 : 100} 
+          depth={isMobile ? 30 : 50} 
+          count={isMobile ? 1000 : 3000} 
+          factor={isMobile ? 2 : 4} 
+          saturation={0} 
+          fade 
+          speed={isMobile ? 0.5 : 1} 
+        />
         <LiquidPlane mouse={mouse} themeColor={themeColor} />
       </Canvas>
     </div>

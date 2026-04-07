@@ -25,20 +25,23 @@ function ParticleRing({ phase }) {
   const particles = useMemo(() => {
     return Array.from({ length: 24 }, (_, i) => {
       const angle = (i / 24) * Math.PI * 2
+      // Use deterministic values based on index instead of Math.random
+      const size = 2 + (i % 3) * 0.5 + ((i * 17) % 10) / 20; // 2 to 4.5
       return {
         id: i,
         angle,
         color: ['#c026d3', '#7c3aed', '#06b6d4', '#ec4899', '#f97316'][i % 5],
-        size: Math.random() * 3 + 2,
+        size,
         delay: i * 0.02,
       }
     })
   }, [])
 
-  return (
+   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       {particles.map((p) => {
-        const radius = phase >= 2 ? 200 + Math.random() * 100 : 0
+        // Use deterministic radius based on particle id instead of Math.random
+        const radius = phase >= 2 ? 200 + ((p.id * 37) % 100) : 0
         const x = Math.cos(p.angle) * radius
         const y = Math.sin(p.angle) * radius
 
@@ -82,14 +85,27 @@ function ParticleRing({ phase }) {
 // ============================
 function KanjiRain({ active, converge }) {
   const columns = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      x: (i / 30) * 100,
-      chars: Array.from({ length: 8 }, () => KANJI_CHARS[Math.floor(Math.random() * KANJI_CHARS.length)]),
-      speed: Math.random() * 2 + 1,
-      delay: Math.random() * 0.5,
-      opacity: Math.random() * 0.4 + 0.2,
-    }))
+    return Array.from({ length: 30 }, (_, i) => {
+      // Use deterministic values based on index instead of Math.random
+      const charIndex = (i * 17) % KANJI_CHARS.length;
+      const speed = 1 + ((i * 19) % 20) / 10; // 1 to 3
+      const delay = ((i * 23) % 50) / 100; // 0 to 0.5
+      const opacity = 0.2 + ((i * 29) % 40) / 100; // 0.2 to 0.6
+      
+      // Generate 8 characters for each column using the base charIndex
+      const chars = Array.from({ length: 8 }, (_, j) => 
+        KANJI_CHARS[(charIndex + j) % KANJI_CHARS.length]
+      );
+      
+      return {
+        id: i,
+        x: (i / 30) * 100,
+        chars,
+        speed,
+        delay,
+        opacity,
+      }
+    })
   }, [])
 
   if (!active) return null
