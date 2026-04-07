@@ -12,6 +12,7 @@ import WeatherSystem from './components/WeatherSystem'
 import SectionTransition from './components/SectionTransition'
 import CommandPalette from './components/CommandPalette'
 import AudioPlayer from './components/AudioPlayer'
+import ErrorBoundary from './components/ErrorBoundary'
 import { FloatingParticles, CustomCursor, ScrollProgress, AnimatedCounter, CharacterMarquee } from './components/Effects'
 import { CharacterProvider, useCharacter } from './context/CharacterContext'
 
@@ -43,86 +44,88 @@ function AppContent({ loaded, setLoaded }) {
       {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
 
       {loaded && (
-        <LayoutGroup>
-          <SmoothScroll>
-            {/* Global Effects */}
-            <FloatingParticles themeColor={globalThemeColor} />
-            <CustomCursor themeColor={globalThemeColor} />
-            <ScrollProgress themeColor={globalThemeColor} />
+        <ErrorBoundary>
+          <LayoutGroup>
+            <SmoothScroll>
+              {/* Global Effects */}
+              <FloatingParticles themeColor={globalThemeColor} />
+              <CustomCursor themeColor={globalThemeColor} />
+              <ScrollProgress themeColor={globalThemeColor} />
 
-            <main className="relative min-h-screen w-full noise-overlay vignette" style={{ background: 'transparent' }}>
-              
-              {/* === AMBILIGHT OVERLAY === */}
-              <div 
-                className="fixed inset-0 pointer-events-none z-[-1] opacity-30 transition-colors duration-1000 mix-blend-screen"
-                style={{
-                  background: `radial-gradient(circle at 50% 100%, ${globalThemeColor} 0%, transparent 60%)`
-                }}
-              />
-
-              {/* === HERO === */}
-              <HeroSection />
-
-              {/* === TRANSITION: Hero → Marquee (Ink Wash) === */}
-              <SectionTransition type="ink-wash" themeColor={globalThemeColor} />
-
-              {/* === MARQUEE STRIP === */}
-              <section className="relative py-8 overflow-hidden">
-                <CharacterMarquee characters={characters} />
-              </section>
-
-              {/* === TRANSITION: Marquee → Stats (Shatter) === */}
-              <SectionTransition type="shatter" themeColor={globalThemeColor} />
-
-              {/* === STATS SECTION === */}
-              <section className="relative py-24 md:py-32 max-w-5xl mx-auto px-6">
-                <SectionTitle
-                  title="By The Numbers"
-                  subtitle="The Legends in data"
+              <main className="relative min-h-screen w-full noise-overlay vignette" style={{ background: 'transparent' }}>
+                
+                {/* === AMBILIGHT OVERLAY === */}
+                <div 
+                  className="fixed inset-0 pointer-events-none z-[-1] opacity-30 transition-colors duration-1000 mix-blend-screen"
+                  style={{
+                    background: `radial-gradient(circle at 50% 100%, ${globalThemeColor} 0%, transparent 60%)`
+                  }}
                 />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                  <AnimatedCounter value="10" label="Legendary Characters" icon="⚔️" />
-                  <AnimatedCounter value="10" label="Epic Moments" icon="🎬" />
-                  <AnimatedCounter value="5" label="Anime Series" icon="📺" />
-                  <AnimatedCounter value="100" label="Battles Fought" icon="🔥" />
-                </div>
-              </section>
 
-              {/* === TRANSITION: Stats → Deck (Portal) === */}
-              <SectionTransition type="portal" themeColor={globalThemeColor} />
+                {/* === HERO === */}
+                <HeroSection />
 
-              {/* === 3D CARD SHUFFLE DECK === */}
-              <section className="relative w-full z-10">
-                <ShuffleDeck
-                  characters={characters}
-                  onSelectCharacter={handleSelectCharacter}
-                  onThemeChange={(color) => setGlobalThemeColor(color)}
-                  externalActiveIndex={activeCardIndex}
-                  onActiveIndexChange={setActiveCardIndex}
-                />
-              </section>
+                {/* === TRANSITION: Hero → Marquee (Ink Wash) === */}
+                <SectionTransition type="ink-wash" themeColor={globalThemeColor} />
 
-              {/* === FOOTER === */}
-              <Footer />
-            </main>
-          </SmoothScroll>
+                {/* === MARQUEE STRIP === */}
+                <section className="relative py-8 overflow-hidden">
+                  <CharacterMarquee characters={characters} />
+                </section>
 
-          {/* === VIDEO EXPANDER OVERLAY === */}
-          <VideoExpander
-            character={activeCharacter}
-            onClose={handleCloseExpander}
-          />
+                {/* === TRANSITION: Marquee → Stats (Shatter) === */}
+                <SectionTransition type="shatter" themeColor={globalThemeColor} />
 
-          {/* === COMMAND PALETTE === */}
-          <CommandPalette
-            characters={characters}
-            onSelectCharacter={handleSelectCharacter}
-            onNavigateToCharacter={handleNavigateToCharacter}
-          />
+                {/* === STATS SECTION === */}
+                <section className="relative py-24 md:py-32 max-w-5xl mx-auto px-6">
+                  <SectionTitle
+                    title="By The Numbers"
+                    subtitle="The Legends in data"
+                  />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <AnimatedCounter value="10" label="Legendary Characters" icon="⚔️" />
+                    <AnimatedCounter value="10" label="Epic Moments" icon="🎬" />
+                    <AnimatedCounter value="5" label="Anime Series" icon="📺" />
+                    <AnimatedCounter value="100" label="Battles Fought" icon="🔥" />
+                  </div>
+                </section>
 
-          {/* === BGM PLAYER === */}
-          <AudioPlayer />
-        </LayoutGroup>
+                {/* === TRANSITION: Stats → Deck (Portal) === */}
+                <SectionTransition type="portal" themeColor={globalThemeColor} />
+
+                {/* === 3D CARD SHUFFLE DECK === */}
+                <section className="relative w-full z-10">
+                  <ShuffleDeck
+                    characters={characters}
+                    onSelectCharacter={handleSelectCharacter}
+                    onThemeChange={(color) => setGlobalThemeColor(color)}
+                    externalActiveIndex={activeCardIndex}
+                    onActiveIndexChange={setActiveCardIndex}
+                  />
+                </section>
+
+                {/* === FOOTER === */}
+                <Footer />
+              </main>
+            </SmoothScroll>
+
+            {/* === VIDEO EXPANDER OVERLAY === */}
+            <VideoExpander
+              character={activeCharacter}
+              onClose={handleCloseExpander}
+            />
+
+            {/* === COMMAND PALETTE === */}
+            <CommandPalette
+              characters={characters}
+              onSelectCharacter={handleSelectCharacter}
+              onNavigateToCharacter={handleNavigateToCharacter}
+            />
+
+            {/* === BGM PLAYER === */}
+            <AudioPlayer />
+          </LayoutGroup>
+        </ErrorBoundary>
       )}
     </>
   )

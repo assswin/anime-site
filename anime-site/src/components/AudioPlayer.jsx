@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { audioManager } from '../utils/audioManager'
 import { useCharacter } from '../context/CharacterContext'
 

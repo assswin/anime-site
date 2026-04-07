@@ -37,7 +37,7 @@ function FloatingParticles({ themeColor }) {
     });
   }, [themeColor, particleCount])
 
-   return (
+  return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {particles.map((p) => {
         // Generate deterministic animation values based on particle properties

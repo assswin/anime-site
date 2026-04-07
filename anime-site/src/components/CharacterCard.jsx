@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
-import { useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 
 export default function CharacterCard({ character, index, isActive, onSelect }) {
   const [isHovered, setIsHovered] = useState(false)
