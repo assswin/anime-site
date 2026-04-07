@@ -41,20 +41,20 @@ export default function HeroSection() {
 
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* Radial gradient bg blobs */}
-      <div className="absolute inset-0 z-0">
-        <motion.div
-          animate={{ x: mousePos.x, y: mousePos.y }}
-          transition={{ type: 'spring', stiffness: 50, damping: 30 }}
-          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/10 blur-[150px]"
-        />
-        <motion.div
-          animate={{ x: -mousePos.x * 0.7, y: -mousePos.y * 0.7 }}
-          transition={{ type: 'spring', stiffness: 50, damping: 30 }}
-          className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/10 blur-[120px]"
-        />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-accent/5 blur-[100px]" />
-      </div>
+       {/* Radial gradient bg blobs */}
+       <div className="absolute inset-0 z-0">
+         <motion.div
+           animate={{ x: mousePos.x, y: mousePos.y }}
+           transition={{ type: 'spring', stiffness: 50, damping: 30 }}
+           className="absolute top-1/4 left-1/4 w-[30rem] h-[30rem] rounded-full bg-primary/10 blur-[150px] sm:w-[40rem] sm:h-[40rem]"
+         />
+         <motion.div
+           animate={{ x: -mousePos.x * 0.7, y: -mousePos.y * 0.7 }}
+           transition={{ type: 'spring', stiffness: 50, damping: 30 }}
+           className="absolute bottom-1/4 right-1/4 w-[24rem] h-[24rem] rounded-full bg-secondary/10 blur-[120px] sm:w-[32rem] sm:h-[32rem]"
+         />
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18rem] h-[18rem] rounded-full bg-accent/5 blur-[100px] sm:w-[24rem] sm:h-[24rem]" />
+       </div>
 
       {/* Animated grid background */}
       <div className="absolute inset-0 z-0 opacity-[0.07] bg-[linear-gradient(rgba(192,38,211,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(192,38,211,0.3)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,#000_70%,transparent_100%)]" />
@@ -62,8 +62,8 @@ export default function HeroSection() {
       {/* Gradient overlay */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-background/30 to-background z-[2]" />
 
-      {/* Content */}
-      <div className="z-10 text-center flex flex-col items-center gap-6 px-4">
+       {/* Content */}
+       <div className="z-10 text-center flex flex-col items-center gap-6 px-4 sm:px-8">
         
         {/* Subtitle above */}
         <motion.div

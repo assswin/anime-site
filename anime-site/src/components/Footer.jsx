@@ -2,12 +2,12 @@ import { motion } from 'framer-motion'
 
 export default function Footer() {
   return (
-    <footer className="relative w-full pt-24 pb-12 overflow-hidden">
+    <footer className="relative w-full pt-16 sm:pt-24 pb-8 sm:pb-12 overflow-hidden">
       {/* Top divider */}
       <div className="section-divider mb-16" />
 
-      {/* Background glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 blur-[150px] rounded-full" />
+       {/* Background glow */}
+       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[36rem] h-[18rem] bg-primary/5 blur-[150px] rounded-full sm:w-[40rem] sm:h-[24rem]" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         {/* Logo */}

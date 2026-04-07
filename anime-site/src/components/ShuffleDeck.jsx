@@ -22,28 +22,31 @@ export default function ShuffleDeck({ characters, onSelectCharacter, onThemeChan
     if (onActiveIndexChange) onActiveIndexChange(index)
   }
 
-  // Magnetic cursor tracking
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!deckRef.current) return
-      const rect = deckRef.current.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-      const distX = (e.clientX - centerX) / rect.width
-      const distY = (e.clientY - centerY) / rect.height
-      
-      // Only apply magnetic pull if cursor is reasonably close to the deck
-      const distance = Math.sqrt(distX * distX + distY * distY)
-      if (distance < 1.5) {
-        // Active card pulls toward cursor (max 20px)
-        setMagneticOffset({
-          x: distX * 25,
-          y: distY * 15,
-        })
-      } else {
-        setMagneticOffset({ x: 0, y: 0 })
-      }
-    }
+     // Magnetic cursor tracking
+   useEffect(() => {
+     const handleMouseMove = (e) => {
+       if (!deckRef.current) return
+       const rect = deckRef.current.getBoundingClientRect()
+       const centerX = rect.left + rect.width / 2
+       const centerY = rect.top + rect.height / 2
+       const distX = (e.clientX - centerX) / rect.width
+       const distY = (e.clientY - centerY) / rect.height
+       
+       // Only apply magnetic pull if cursor is reasonably close to the deck
+       const distance = Math.sqrt(distX * distX + distY * distY)
+       if (distance < 1.5) {
+         // Active card pulls toward cursor (responsive max based on viewport)
+         const vh = window.innerHeight * 0.01
+         const maxOffsetX = Math.max(15, vh * 1.5) // Responsive max offset
+         const maxOffsetY = Math.max(10, vh * 1)   // Responsive max offset
+         setMagneticOffset({
+           x: distX * maxOffsetX,
+           y: distY * maxOffsetY,
+         })
+       } else {
+         setMagneticOffset({ x: 0, y: 0 })
+       }
+     }
 
     const handleMouseLeave = () => {
       setMagneticOffset({ x: 0, y: 0 })
@@ -81,94 +84,99 @@ export default function ShuffleDeck({ characters, onSelectCharacter, onThemeChan
     }
   }
 
-  // Calculate 3D deck positions with heavy tilt (60-95 degrees)
-  const getCardProps = (cardIndex) => {
-    let relativeIndex = cardIndex - activeCardIndex
-    if (relativeIndex < 0) relativeIndex += totalCards
+     // Calculate 3D deck positions with heavy tilt (60-95 degrees)
+   const getCardProps = (cardIndex) => {
+     let relativeIndex = cardIndex - activeCardIndex
+     if (relativeIndex < 0) relativeIndex += totalCards
 
-    // Active Card (Top of deck)
-    if (relativeIndex === 0) {
-      return {
-        zIndex: 50,
-        scale: 1,
-        y: 0,
-        z: 0,
-        rotateX: 0,
-        translateZ: 0,
-        opacity: 1,
-        pointerEvents: 'auto',
-        blur: 'blur(0px)',
-      }
-    }
-    // Second Card
-    if (relativeIndex === 1) {
-      return {
-        zIndex: 40,
-        scale: 0.9,
-        y: -40,
-        z: -50,
-        rotateX: 0,
-        translateZ: -50,
-        opacity: 0.8,
-        pointerEvents: 'none',
-        blur: 'blur(2px)',
-      }
-    }
-    // Third Card
-    if (relativeIndex === 2) {
-      return {
-        zIndex: 30,
-        scale: 0.8,
-        y: -80,
-        z: -100,
-        rotateX: 0,
-        translateZ: -100,
-        opacity: 0.5,
-        pointerEvents: 'none',
-        blur: 'blur(4px)',
-      }
-    }
-    // Fourth Card
-    if (relativeIndex === 3) {
-      return {
-        zIndex: 20,
-        scale: 0.7,
-        y: -120,
-        z: -150,
-        rotateX: 0,
-        translateZ: -150,
-        opacity: 0.2,
-        pointerEvents: 'none',
-        blur: 'blur(6px)',
-      }
-    }
-    // Fifth Card
-    if (relativeIndex === 4) {
-      return {
-        zIndex: 10,
-        scale: 0.6,
-        y: -160,
-        z: -200,
-        rotateX: 0,
-        translateZ: -200,
-        opacity: 0.1,
-        pointerEvents: 'none',
-        blur: 'blur(8px)',
-      }
-    }
-    // Hidden cards
-    return {
-      zIndex: 0,
-      scale: 0.5,
-      y: -200,
-      z: -250,
-      rotateX: 0,
-      translateZ: -250,
-      opacity: 0,
-      pointerEvents: 'none',
-      blur: 'blur(10px)',
-    }
-  }
+     // Responsive values based on viewport height
+     const vh = window.innerHeight * 0.01; // 1vh in pixels
+     const yOffset = 4 * vh; // Base offset
+     const zOffset = 5 * vh; // Base Z offset
+
+     // Active Card (Top of deck)
+     if (relativeIndex === 0) {
+       return {
+         zIndex: 50,
+         scale: 1,
+         y: 0,
+         z: 0,
+         rotateX: 0,
+         translateZ: 0,
+         opacity: 1,
+         pointerEvents: 'auto',
+         blur: 'blur(0px)',
+       }
+     }
+     // Second Card
+     if (relativeIndex === 1) {
+       return {
+         zIndex: 40,
+         scale: 0.9,
+         y: -yOffset,
+         z: -zOffset,
+         rotateX: 0,
+         translateZ: -zOffset,
+         opacity: 0.8,
+         pointerEvents: 'none',
+         blur: 'blur(2px)',
+       }
+     }
+     // Third Card
+     if (relativeIndex === 2) {
+       return {
+         zIndex: 30,
+         scale: 0.8,
+         y: -yOffset * 2,
+         z: -zOffset * 2,
+         rotateX: 0,
+         translateZ: -zOffset * 2,
+         opacity: 0.5,
+         pointerEvents: 'none',
+         blur: 'blur(4px)',
+       }
+     }
+     // Fourth Card
+     if (relativeIndex === 3) {
+       return {
+         zIndex: 20,
+         scale: 0.7,
+         y: -yOffset * 3,
+         z: -zOffset * 3,
+         rotateX: 0,
+         translateZ: -zOffset * 3,
+         opacity: 0.2,
+         pointerEvents: 'none',
+         blur: 'blur(6px)',
+       }
+     }
+     // Fifth Card
+     if (relativeIndex === 4) {
+       return {
+         zIndex: 10,
+         scale: 0.6,
+         y: -yOffset * 4,
+         z: -zOffset * 4,
+         rotateX: 0,
+         translateZ: -zOffset * 4,
+         opacity: 0.1,
+         pointerEvents: 'none',
+         blur: 'blur(8px)',
+       }
+     }
+     // Hidden cards
+     return {
+       zIndex: 0,
+       scale: 0.5,
+       y: -yOffset * 5,
+       z: -zOffset * 5,
+       rotateX: 0,
+       translateZ: -zOffset * 5,
+       opacity: 0,
+       pointerEvents: 'none',
+       blur: 'blur(10px)',
+     }
+   }
 
   const activeCharacter = characters[activeCardIndex]
 

@@ -132,7 +132,7 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
         <div className="absolute inset-0 z-[2] transition-all duration-1000" style={{ boxShadow: isHovered && isActive ? `inset 0 0 60px ${character.themeColor}40` : 'none' }} />
 
         {/* Index watermark */}
-        <div className={`absolute top-6 right-8 text-[8rem] md:text-[10rem] font-display font-extrabold leading-none z-[3] transition-all duration-700 font-sans ${isHovered && isActive ? 'text-white/[0.08]' : 'text-white/[0.03]'}`}>
+           <div className={`absolute top-6 right-8 text-[6rem] md:text-[8rem] lg:text-[10rem] font-display font-extrabold leading-none z-[3] transition-all duration-700 font-sans ${isHovered && isActive ? 'text-white/[0.08]' : 'text-white/[0.03]'}`}>
           {String(index + 1).padStart(2, '0')}
         </div>
 

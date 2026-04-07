@@ -35,8 +35,8 @@ export default function AudioPlayer() {
     }
   }, [activeCardIndex, characters, isAudioStarted, currentTrack])
 
-  return (
-    <div className="fixed bottom-6 left-6 z-[100000] flex items-center gap-4">
+   return (
+     <div className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[100000] flex items-center gap-3 sm:gap-4">
       <motion.button
         className="w-12 h-12 rounded-full glass-card border border-white/10 flex items-center justify-center group overflow-hidden"
         whileHover={{ scale: 1.1, borderColor: globalThemeColor }}
@@ -101,25 +101,25 @@ export default function AudioPlayer() {
         )}
       </motion.button>
 
-      {/* Track info hint */}
-      <AnimatePresence>
-        {!isMuted && (
-          <motion.div
-            className="glass-card px-4 py-2 rounded-lg border border-white/5"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-          >
-            <span className="text-[10px] tracking-widest uppercase font-display text-white/40 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: globalThemeColor }}></span>
-                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: globalThemeColor }}></span>
-              </span>
-              BGM: {characters[activeCardIndex]?.audioLabel || characters[activeCardIndex]?.name}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+         {/* Track info hint */}
+       <AnimatePresence>
+         {!isMuted && (
+           <motion.div
+             className="glass-card px-3 sm:px-4 py-1 sm:py-2 rounded-lg border border-white/5"
+             initial={{ opacity: 0, x: -10 }}
+             animate={{ opacity: 1, x: 0 }}
+             exit={{ opacity: 0, x: -10 }}
+           >
+             <span className="text-[9px] sm:text-[10px] tracking-widest uppercase font-display text-white/40 flex items-center gap-1 sm:gap-2">
+               <span className="relative flex h-2 w-2">
+                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: globalThemeColor }}></span>
+                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: globalThemeColor }}></span>
+               </span>
+               BGM: {characters[activeCardIndex]?.audioLabel || characters[activeCardIndex]?.name}
+             </span>
+           </motion.div>
+         )}
+       </AnimatePresence>
     </div>
   )
 }

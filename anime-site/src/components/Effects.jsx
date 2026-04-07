@@ -5,8 +5,11 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 // Floating Particles Component
 // ============================
 function FloatingParticles({ themeColor }) {
+  // Reduce particle count on mobile for performance
+  const particleCount = typeof window !== 'undefined' && window.innerWidth < 768 ? 20 : 40;
+  
   const particles = useMemo(() => {
-    return Array.from({ length: 40 }, (_, i) => ({
+    return Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -16,7 +19,7 @@ function FloatingParticles({ themeColor }) {
       color: ['#c026d3', '#7c3aed', '#06b6d4', '#ec4899'][Math.floor(Math.random() * 4)],
       opacity: Math.random() * 0.4 + 0.1,
     }))
-  }, [])
+  }, [themeColor])
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
