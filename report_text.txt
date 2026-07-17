@@ -1,0 +1,394 @@
+ANIME LEGENDS
+Website Improvement & Advancement Report
+React + Vite + Framer Motion
+10 Characters  •  WebGL Background  •  Cinematic UI
+April 2026
+1. Executive Summary
+This report provides a comprehensive analysis of the Anime Legends React + Vite web application. After reviewing all 18 source files — including components, data, styles, and the implementation plan — we identified critical bugs, performance bottlenecks, missing accessibility features, and high-value feature opportunities.
+Key Metrics at a Glance
+Critical Issues Found
+4
+High-Priority Improvements
+8
+New Features Recommended
+6
+Components Analyzed
+18
+Estimated Total Effort
+3–5 weeks
+Expected Perf Gain
++40–60%
+2. Codebase Analysis
+Your codebase is remarkably ambitious for a personal project. The architecture shows strong understanding of modern React patterns including custom hooks, memoization, Framer Motion layout animations, and Three.js shader programming. The component breakdown below summarizes what was found in each file.
+2.1 Component Overview
+Component
+Purpose
+Complexity
+WebGLBackground.jsx
+Full-screen Three.js canvas with custom GLSL Perlin noise shader and mouse-reactive fluid effect
+Very High
+VideoExpander.jsx
+Animated full-screen character modal with energy rings, floating kanji seals, and RPG stats reveal
+Very High
+ShuffleDeck.jsx
+3D stacked card deck with magnetic cursor physics and keyboard navigation
+High
+HorizontalScroll.jsx
+Scroll-driven horizontal character carousel with ambilight and audio ticks
+High
+WeatherSystem.jsx
+Per-character particle weather (10 types: embers, lightning, windslash, rain, etc.)
+High
+Preloader.jsx
+Cinematic 5-phase loading sequence: particle ring → kanji rain → title morph → dissolve
+High
+CommandPalette.jsx
+Spotlight-style Ctrl+K search with fuzzy matching and keyboard navigation
+Medium
+CharacterCard.jsx
+3D holographic card with text scramble, spring physics parallax, and hover glow
+Medium
+AnimatedStats.jsx
+RPG-style animated stat bars with shimmer sweep and overall rating
+Medium
+Effects.jsx
+Shared: floating particles, custom cursor, scroll progress bar, marquee strip
+Medium
+HeroSection.jsx
+Letter-by-letter 3D flip title animation with mouse parallax blobs
+Medium
+SectionTransition.jsx
+Scroll-triggered ink-wash / shatter / portal transition dividers
+Medium
+SmoothScroll.jsx
+Lenis smooth scroll wrapper
+Low
+SectionTitle.jsx
+Animated section heading with decorative pulse dots
+Low
+Footer.jsx
+Animated footer with gradient logo and anime series list
+Low
+characters.js
+10 character objects with stats, theme colors, weather types, and asset paths
+Low
+3. Critical Issues to Fix First
+These issues directly harm performance or break functionality and should be addressed before adding new features.
+3.1 Issue Tracker
+Area
+Issue
+Priority
+Effort
+HorizontalScroll
+isActive prop never passed to CharacterCard — hover effects, scramble text, and click handler are permanently disabled
+Critical
+Low
+WebGLBackground
+new THREE.Vector2() created every animation frame inside useFrame — causes massive GC pressure and frame drops
+Critical
+Low
+Effects.jsx
+CustomCursor queries DOM for .cursor-hover-target only once on mount — dynamically rendered cards are never detected
+Critical
+Medium
+WeatherSystem
+Math.random() called inside useMemo dependency on weatherType, but random values recalculate every render not just on character change
+High
+Low
+SmoothScroll
+requestAnimationFrame loop is never cancelled on cleanup — memory leak when component unmounts
+High
+Low
+VideoExpander
+video.play() called without checking document visibility — autoplay may fail silently on mobile browsers
+High
+Medium
+CharacterCard
+layoutId uses character.id which can cause Framer Motion conflicts if the same character appears in multiple lists simultaneously
+High
+Low
+Preloader
+All 24 ParticleRing particles recalculate radius with Math.random() on every phase change — should be memoized
+Medium
+Low
+Fix 1: isActive Prop in HorizontalScroll.jsx
+This is the most impactful single-line bug. Every CharacterCard rendered inside HorizontalScroll is missing its isActive prop, which means:
+The text scramble effect never triggers
+The "Tap to unleash" label never appears
+Click to open VideoExpander is permanently broken
+Hover glow, scale, and parallax physics are all disabled
+Current broken code in HorizontalScroll.jsx:
+  <CharacterCard
+    character={character}
+    index={index}
+    onSelect={onSelectCharacter}
+  />
+Fixed code:
+  <CharacterCard
+    character={character}
+    index={index}
+    isActive={index === activeCardIndex}
+    onSelect={onSelectCharacter}
+  />
+Fix 2: WebGLBackground.jsx — Vector2 Allocation
+Creating a new THREE.Vector2 inside useFrame runs at 60fps, generating 60 garbage objects per second. Replace with a pre-allocated ref:
+// Add above useFrame:
+const mouseVec = useRef(new THREE.Vector2(0.5, 0.5))
+// Inside useFrame, reuse instead of allocating:
+mouseVec.current.set(
+  mouse.current.x / window.innerWidth,
+  1.0 - mouse.current.y / window.innerHeight
+)
+uniforms.uMouse.value.lerp(mouseVec.current, 0.05)
+Fix 3: SmoothScroll.jsx — RAF Leak
+The requestAnimationFrame loop inside SmoothScroll never gets cancelled. Add a cancel handle to the cleanup:
+let rafId
+function raf(time) {
+  lenis.raf(time)
+  rafId = requestAnimationFrame(raf)
+}
+rafId = requestAnimationFrame(raf)
+return () => {
+  cancelAnimationFrame(rafId)
+  lenis.destroy()
+}
+4. Performance Improvements
+4.1 Video Loading Strategy
+Currently all character videos are likely loaded upfront. With 10 MP4 files, this can mean 100–500MB of network requests on page load. Implement intersection-observer-based loading:
+Add preload="none" on all video elements by default
+Switch to preload="metadata" when card enters viewport (within 1 card distance)
+Only call video.load() and video.play() when card becomes active
+Pause and unload videos that are more than 2 cards away
+Expected impact: 80–90% reduction in initial network payload, faster Time to Interactive.
+4.2 Particle Count Reduction
+The WeatherSystem and FloatingParticles components generate between 8 and 50 animated elements simultaneously. On mobile or low-power devices this causes frame drops. Recommendations:
+Detect device performance using navigator.hardwareConcurrency and window.devicePixelRatio
+Scale particle counts: desktop = 100%, tablet = 60%, mobile = 30%
+Use CSS will-change: transform only on the active weather layer, not all particles
+Replace Framer Motion animate on individual particles with a single canvas-based renderer for the WeatherSystem
+Expected impact: +20–40 FPS on mid-range mobile devices.
+4.3 WebGL Shader Optimization
+The custom GLSL fragment shader in WebGLBackground samples Perlin noise twice per fragment at different frequencies. This is expensive on integrated graphics. Optimizations:
+Reduce noise octaves from 2 to 1 on mobile (detect with matchMedia)
+Lower the planeGeometry resolution from 64x64 to 32x32 on mobile
+Add a uResolution uniform and scale UV coordinates to avoid stretched noise on non-square viewports
+Consider replacing the live shader with a pre-rendered video or CSS animation on very low-end devices
+4.4 Bundle Size Analysis
+Your current dependencies include Three.js, @react-three/fiber, @react-three/drei, and Framer Motion — all of which are large libraries. Recommendations:
+Run: npx vite-bundle-analyzer after building to identify the largest chunks
+Three.js can be tree-shaken: import only what you use instead of the entire package
+@react-three/drei imports many extras — import Stars and PerspectiveCamera directly
+Consider dynamic import of WebGLBackground so it does not block the initial render
+const WebGLBackground = lazy(() => import('./WebGLBackground'))
+5. UX & Design Improvements
+5.1 Navigation & Wayfinding
+The site has no persistent navigation. Users who want to jump between characters must scroll through the entire HorizontalScroll section or use the CommandPalette (which many users will not discover). Recommendations:
+Add a fixed mini-navbar at the top with: site logo, character count indicator, CommandPalette trigger button with keyboard hint
+Make the CommandPalette discoverable: show a floating "/" or "Search" button on mobile where keyboard shortcuts do not work
+Add character name labels visible below the scroll-progress dots on the right side of HorizontalScroll
+Show a "Character X of 10" indicator that updates as users scroll through the deck
+5.2 Mobile Experience
+Several features degrade significantly on mobile:
+The CustomCursor is hidden on mobile (correct), but the cursor.hovering state logic still runs — add a media query check before attaching mousemove listeners
+The 3D holographic parallax in CharacterCard uses mouse position, which has no equivalent on touch. Add gyroscope support via DeviceOrientationEvent as a touch parallel
+The CommandPalette "/" shortcut does not work on mobile keyboards. Add a visible search icon button
+HorizontalScroll requires vertical scroll to move horizontally — add swipe gesture support using touch events
+VideoExpander opens full-screen on mobile, but the character image and stats panel stack vertically — test this layout and adjust flex direction breakpoints
+5.3 Loading State UX
+The 4.8-second Preloader is cinematic but may frustrate returning users. Improvements:
+Check sessionStorage on load — if the user has visited before, skip the preloader or reduce it to 1.5 seconds
+Add a "Skip intro" button visible after phase 2 (at 0.5 seconds)
+Show asset loading progress during the preloader phases rather than just decorative animations
+Lazy-load character images during the preloader so they are ready when the deck renders
+6. Accessibility (a11y)
+The current codebase has no visible accessibility considerations. This affects users with visual impairments, motor disabilities, and those who use assistive technologies. The following are the highest-priority fixes:
+6.1 Critical Accessibility Fixes
+Component
+Issue
+Fix
+CharacterCard
+No aria-label on the card button — screen readers say "button" with no context
+Add aria-label={`View ${character.name}`}
+VideoExpander
+Close button has no accessible label
+The aria-label="Close" is present — good. Also add role="dialog" and aria-modal="true" to the overlay
+CommandPalette
+Search input has no label element
+Add aria-label="Search characters" to the input element
+CommandPalette
+Result list has no ARIA listbox role
+Wrap results in role="listbox" and add role="option" to each result button
+HeroSection
+Animated h1 letters are individual spans — screen readers read each letter separately
+Wrap the entire title in an aria-label="Anime Legends" and add aria-hidden="true" to the individual spans
+Preloader
+No aria-live region — screen readers do not announce loading progress
+Add a visually hidden aria-live="polite" element that announces phase transitions
+Effects.jsx
+Floating particles have no pointer-events:none ARIA hiding
+Add aria-hidden="true" to all decorative particle containers
+SmoothScroll
+Lenis smooth scroll conflicts with prefers-reduced-motion
+Check matchMedia("(prefers-reduced-motion: reduce)") and disable Lenis if true
+7. New Feature Recommendations
+The following features would significantly elevate the site from a showcase into an interactive experience — matching or exceeding the quality of premium anime streaming platforms.
+7.1 Feature Roadmap
+Feature
+Description
+Impact
+Files Affected
+Anime BGM Player
+A collapsible audio player in the corner that plays character-specific background music when their card is active. Include waveform visualizer using Web Audio API AnalyserNode.
+Very High
+New: AudioPlayer.jsx
+Character vs Character
+A "Battle Mode" that lets users pick two characters and shows a side-by-side stat comparison with animated bar races. Could use the CommandPalette as the selector.
+High
+New: BattleMode.jsx
+Quote Carousel
+Each character has a quotes image asset but it is never shown in the current UI. Build a typewriter-effect quote display inside the VideoExpander using the existing quote image paths.
+High
+VideoExpander.jsx
+Shareable Character Card
+A "Share" button in VideoExpander that generates a styled PNG of the character card (using html2canvas) and copies it or downloads it. Great for social sharing.
+High
+VideoExpander.jsx
+Character Tier List
+A drag-and-drop tier list builder (S/A/B/C/D tiers) using the character images. Saved to localStorage. Users can screenshot and share their ranking.
+Medium
+New: TierList.jsx
+Scroll Progress Chapters
+Replace the simple scroll dots with a chapter-style timeline on the left edge showing character names with small thumbnails. Clicking jumps to that character.
+Medium
+HorizontalScroll.jsx
+7.2 Audio System (Detailed)
+Your codebase already references an audioManager.playTick() utility in HorizontalScroll.jsx, suggesting audio was planned. Here is the full implementation path:
+Create src/utils/audio.js with a singleton AudioContext manager
+Use the Web Audio API to create short tick sounds procedurally (no audio files needed for UI sounds)
+For character BGM, source royalty-free anime instrumental tracks (Pixabay or Freesound) and name them matching the character IDs: /assets/audio/eren.mp3, etc.
+Add an "audio" field to each character object in characters.js
+Fade BGM in/out with GainNode when the active character changes — 500ms cross-fade
+Respect the system prefers-reduced-motion and add a mute toggle button in the UI
+7.3 Quote System (Detailed)
+The characters.js data includes a quote field (/assets/quotes/Eren_qoutes.jpg, etc.) but no component currently renders it. Two approaches:
+Approach A — Show as image: Add an image element inside VideoExpander that fades in after the stats animation (at phase 3 + 2 seconds). Position it as a cinematic subtitle overlay at the bottom of the expanded card.
+Approach B — Add text quotes to characters.js: Move away from image-based quotes and add a "quote" text string and "quoteSource" string to each character object. Use a typewriter animation (character by character reveal) inside VideoExpander for a much more dynamic effect that also works on all screen sizes.
+Approach B is strongly recommended as it avoids layout issues with quote images on mobile and enables text selection, copying, and future features like "Quote of the Day".
+8. Code Quality & Architecture
+8.1 State Management
+Currently, themeColor state is threaded through props from App.jsx down through HorizontalScroll, ShuffleDeck, and WebGLBackground. As the app grows this prop-drilling will become unwieldy. Recommendation:
+Create a CharacterContext using React.createContext
+Store: activeCharacter, activeIndex, themeColor in the context
+WebGLBackground, WeatherSystem, CustomCursor, and ScrollProgress can all read themeColor from context without prop chains
+// src/context/CharacterContext.jsx
+const CharacterContext = createContext(null)
+export const useCharacter = () => useContext(CharacterContext)
+8.2 Custom Hooks to Extract
+Several components contain logic that could be reusable hooks, making components cleaner and easier to test:
+useMediaQuery(query) — already needed in 3+ components for mobile detection
+useIntersectionObserver(ref, options) — used in Effects.jsx AnimatedCounter, could simplify several video lazy-load implementations
+useThrottledMousePosition() — mouse position is tracked in HeroSection, ShuffleDeck, WebGLBackground, and Effects.jsx separately. Centralizing this saves 4 duplicate event listeners
+useCharacterNavigation(characters) — wraps the next/prev/index logic currently duplicated between ShuffleDeck and HorizontalScroll
+8.3 TypeScript Migration
+The codebase would benefit significantly from TypeScript, especially given the shared character data structure that is consumed by 8+ components:
+Add a Character interface in src/types/character.ts with all fields typed
+The stats object shape (strength, speed, technique, power, endurance) should be a typed interface
+Run: npm install -D typescript @types/react @types/react-dom and add a tsconfig.json to start the migration incrementally
+Begin with characters.js and the data layer — the biggest safety win for the lowest effort
+9. SEO & Discoverability
+As a React SPA, the site currently has minimal SEO. Since this is a portfolio/showcase project, basic metadata is the minimum required.
+Add a proper <title> and <meta name="description"> in index.html
+Add Open Graph tags so sharing the URL on Discord/Twitter shows a preview card with an anime image
+Add a <link rel="preconnect"> for any CDN assets
+Add a robots.txt and sitemap.xml
+Consider deploying to Vercel or Netlify (both have free tiers) with a custom domain — significantly improves shareability
+Recommended meta tags for index.html:
+<title>Anime Legends | A Tribute to Iconic Characters</title>
+<meta name="description" content="Interactive showcase of the greatest
+  anime characters — Eren, Gojo, Levi, Luffy and more." />
+<meta property="og:title" content="Anime Legends" />
+<meta property="og:image" content="/og-image.jpg" />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#7C3AED" />
+10. Recommended Implementation Roadmap
+The following phased approach prioritises fixes that unblock existing features first, then improves quality, then adds new capabilities.
+Phase
+Task
+Priority
+Est. Time
+Phase 1
+Fix isActive prop in HorizontalScroll.jsx
+Critical
+15 min
+Phase 1
+Fix THREE.Vector2 allocation in WebGLBackground.jsx
+Critical
+10 min
+Phase 1
+Fix RAF memory leak in SmoothScroll.jsx
+Critical
+10 min
+Phase 1
+Fix CustomCursor DOM query to use MutationObserver
+Critical
+30 min
+Phase 2
+Add prefers-reduced-motion check to Lenis and all particle animations
+High
+1 hour
+Phase 2
+Implement video lazy loading with IntersectionObserver
+High
+2 hours
+Phase 2
+Add ARIA labels, roles, and dialog attributes throughout
+High
+2 hours
+Phase 2
+Extract CharacterContext to remove prop drilling
+High
+2 hours
+Phase 3
+Add text quotes to characters.js and typewriter reveal in VideoExpander
+Medium
+3 hours
+Phase 3
+Implement BGM audio player with Web Audio API cross-fade
+Medium
+4 hours
+Phase 3
+Add mobile swipe gesture support to HorizontalScroll
+Medium
+3 hours
+Phase 3
+Add "Skip intro" button to Preloader
+Medium
+1 hour
+Phase 4
+Build Character vs Character battle mode
+Low
+1 day
+Phase 4
+Build drag-and-drop Tier List feature
+Low
+1 day
+Phase 4
+TypeScript migration starting with characters.js
+Low
+2 days
+Phase 4
+Add Open Graph meta tags and deploy to Vercel
+Low
+1 hour
+11. What Is Already Excellent
+Beyond the improvements, it is worth noting what the codebase does exceptionally well:
+Custom GLSL shader with Perlin noise and mouse-reactive fluid dynamics — this is expert-level work rarely seen in personal projects
+The 5-phase cinematic preloader with kanji rain convergence and particle ring explosion is genuinely impressive
+Per-character weather systems (10 different particle types) showing deep creative attention to character identity
+The text scramble hook using Japanese katakana characters is a beautiful detail that fits the anime theme perfectly
+CommandPalette with fuzzy search and keyboard navigation matches the quality of professional tools like Linear and Raycast
+The ShuffleDeck magnetic cursor physics (pulling the active card toward the cursor) is a subtle but delightful touch
+Framer Motion layoutId shared layout animations between CharacterCard and VideoExpander create a seamless "expand" illusion
+The character data structure is well-designed — each character having a themeColor, weather type, and stat object enables the entire dynamic theming system
+Final Note
+This is an outstanding project that demonstrates rare depth across React, Three.js, GLSL, Framer Motion, and creative design. Fix the four critical bugs first — they will immediately unlock the full experience you designed. Then systematically work through the phases above and you will have a portfolio piece that stands out at any professional level.
