@@ -179,7 +179,8 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
               ref={videoRef}
               src={character.video}
               poster={character.image}
-              preload="metadata"
+              preload="auto"
+              autoPlay
               loop
               muted
               playsInline

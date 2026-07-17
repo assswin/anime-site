@@ -270,6 +270,7 @@ export default function VideoExpander({ character, onClose }) {
                 ref={videoRef}
                 src={character.video}
                 loop
+                muted
                 playsInline
                 preload="none"
                 onCanPlay={handleVideoCanPlay}
