@@ -95,24 +95,33 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
     my.set(0)
   }
   
-  const [mobileVideoPlaying, setMobileVideoPlaying] = useState(false)
+  // On mobile: auto-play video when card becomes active, pause when not
+  useEffect(() => {
+    if (!isMobile) return
+    if (!videoRef.current) return
+
+    if (isActive && !activeCharacter) {
+      // Small delay to let the card animate into place
+      const timer = setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play().catch(err => console.warn("Mobile auto-play blocked", err))
+        }
+      }, 300)
+      return () => clearTimeout(timer)
+    } else {
+      videoRef.current.pause()
+    }
+  }, [isMobile, isActive, activeCharacter])
+
+  // Show video on mobile when card is active (no tap needed)
+  const showVideo = isMobile ? isActive : isHovered
   
   const handleClick = useCallback((e) => {
     if (!isActive) return
     
     if (isMobile) {
-      if (e) e.preventDefault()
-      const willPlay = !mobileVideoPlaying
-      setMobileVideoPlaying(willPlay)
-      
-      if (videoRef.current) {
-        if (willPlay) {
-          // Explicitly play on user gesture to avoid iOS restrictions
-          videoRef.current.play().catch(err => console.warn("Mobile play blocked", err))
-        } else {
-          videoRef.current.pause()
-        }
-      }
+      // On mobile, tap opens the VideoExpander (same as desktop)
+      onSelect(character)
       return
     }
 
@@ -172,7 +181,7 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
           <motion.div 
             className="absolute inset-0 z-0"
             initial={{ opacity: 0 }}
-            animate={{ opacity: (isHovered || (isMobile && mobileVideoPlaying)) ? 1 : 0 }}
+            animate={{ opacity: showVideo ? 1 : 0 }}
             transition={{ duration: 0.7, ease: "easeInOut" }}
           >
             <video
@@ -180,7 +189,6 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
               src={character.video}
               poster={character.image}
               preload="auto"
-              autoPlay
               loop
               muted
               playsInline
@@ -192,20 +200,20 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
         {/* Character Image */}
         <motion.div
           layoutId={`card-image-${character.id}`}
-          className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${(isHovered || (isMobile && mobileVideoPlaying)) && isActive ? 'opacity-0' : 'opacity-100'}`}
+          className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${showVideo && isActive ? 'opacity-0' : 'opacity-100'}`}
         >
           <img
             src={character.image}
             alt={character.name}
             loading="lazy"
-            className={`object-cover w-full h-full transition-transform duration-700 ${(isHovered || (isMobile && mobileVideoPlaying)) && isActive ? 'scale-105' : 'scale-100'} ${!isActive ? 'brightness-[0.35] saturate-[0.4]' : ''}`}
+            className={`object-cover w-full h-full transition-transform duration-700 ${showVideo && isActive ? 'scale-105' : 'scale-100'} ${!isActive ? 'brightness-[0.35] saturate-[0.4]' : ''}`}
           />
         </motion.div>
 
         {/* Gradient overlays */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/60 to-transparent z-[2] transition-opacity duration-700 ${(isHovered || (isMobile && mobileVideoPlaying)) && isActive ? 'opacity-0' : 'opacity-100'}`} />
+        <div className={`absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/60 to-transparent z-[2] transition-opacity duration-700 ${showVideo && isActive ? 'opacity-0' : 'opacity-100'}`} />
         {!isMobile && (
-          <div className={`absolute inset-0 z-[2] transition-opacity duration-700 ${(isHovered || (isMobile && mobileVideoPlaying)) && isActive ? 'opacity-0' : 'opacity-0'}`}>
+          <div className={`absolute inset-0 z-[2] transition-opacity duration-700 ${showVideo && isActive ? 'opacity-0' : 'opacity-0'}`}>
             <div 
               className="absolute inset-0 opacity-40 mix-blend-color" 
               style={{ backgroundImage: `linear-gradient(to top right, ${character.themeColor}, transparent)` }} 
@@ -219,12 +227,12 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
         )}
 
         {/* Index watermark */}
-           <div className={`absolute top-4 right-6 md:top-6 md:right-8 text-[4.5rem] md:text-[8rem] lg:text-[10rem] font-display font-extrabold leading-none z-[4] transition-all duration-700 font-sans ${(isHovered || (isMobile && mobileVideoPlaying)) && isActive ? 'text-white/[0.08]' : 'text-white/[0.03]'}`}>
+           <div className={`absolute top-4 right-6 md:top-6 md:right-8 text-[4.5rem] md:text-[8rem] lg:text-[10rem] font-display font-extrabold leading-none z-[4] transition-all duration-700 font-sans ${showVideo && isActive ? 'text-white/[0.08]' : 'text-white/[0.03]'}`}>
           {String(index + 1).padStart(2, '0')}
         </div>
 
         {/* Bottom content */}
-        <div className={`absolute bottom-0 left-0 right-0 p-5 md:p-12 z-[4] transition-opacity duration-700 ${(isHovered || (isMobile && mobileVideoPlaying)) && isActive ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`absolute bottom-0 left-0 right-0 p-5 md:p-12 z-[4] transition-opacity duration-700 ${showVideo && isActive ? 'opacity-0' : 'opacity-100'}`}>
           <motion.h2
             layoutId={`card-name-${character.id}`}
             className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-cinematic font-bold tracking-wider uppercase transition-all duration-500 mb-2 md:mb-3"
@@ -242,10 +250,11 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
           />
 
           <p className={`mt-4 text-[10px] md:text-xs tracking-[0.3em] uppercase font-display transition-all duration-700 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ color: character.themeColor }}>
-            ⟡ {isMobile ? 'Tap to play video' : 'Tap to unleash'}
+            ⟡ {isMobile ? 'Tap to unleash' : 'Tap to unleash'}
           </p>
         </div>
       </div>
     </motion.div>
   )
 }
+
