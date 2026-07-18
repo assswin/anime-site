@@ -121,8 +121,9 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
 
   const handleClick = useCallback((e) => {
     if (!isActive) return
+    if (isMobile) return // Disable video expander on mobile
     onSelect(character)
-  }, [isActive, character, onSelect])
+  }, [isActive, character, isMobile, onSelect])
   
   return (
     <motion.div
@@ -238,7 +239,7 @@ export default function CharacterCard({ character, index, isActive, onSelect }) 
           />
 
           <p className={`mt-4 text-[10px] md:text-xs tracking-[0.3em] uppercase font-display transition-all duration-700 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ color: character.themeColor }}>
-            ⟡ Tap to unleash
+            {isMobile ? '⟡ Playing' : '⟡ Tap to unleash'}
           </p>
         </div>
       </div>
