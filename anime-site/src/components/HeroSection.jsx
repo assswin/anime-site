@@ -45,26 +45,19 @@ export default function HeroSection() {
 
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden" role="banner">
-       {/* Radial gradient bg blobs — simplified on mobile */}
+       {/* Radial gradient bg blobs */}
        <div className="absolute inset-0 z-0">
-         {isMobile ? (
-           /* Static gradient for mobile — no blur, no spring animation */
-           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-         ) : (
-           <>
-             <motion.div
-               animate={{ x: mousePos.x, y: mousePos.y }}
-               transition={{ type: 'spring', stiffness: 50, damping: 30 }}
-               className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-primary/10 blur-[150px]"
-             />
-             <motion.div
-               animate={{ x: -mousePos.x * 0.7, y: -mousePos.y * 0.7 }}
-               transition={{ type: 'spring', stiffness: 50, damping: 30 }}
-               className="absolute bottom-1/4 right-1/4 w-[32rem] h-[32rem] rounded-full bg-secondary/10 blur-[120px]"
-             />
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[24rem] h-[24rem] rounded-full bg-accent/5 blur-[100px]" />
-           </>
-         )}
+         <motion.div
+           animate={{ x: mousePos.x, y: mousePos.y }}
+           transition={{ type: 'spring', stiffness: 50, damping: 30 }}
+           className="absolute top-1/4 left-1/4 w-[30rem] h-[30rem] rounded-full bg-primary/10 blur-[150px] sm:w-[40rem] sm:h-[40rem]"
+         />
+         <motion.div
+           animate={{ x: -mousePos.x * 0.7, y: -mousePos.y * 0.7 }}
+           transition={{ type: 'spring', stiffness: 50, damping: 30 }}
+           className="absolute bottom-1/4 right-1/4 w-[24rem] h-[24rem] rounded-full bg-secondary/10 blur-[120px] sm:w-[32rem] sm:h-[32rem]"
+         />
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18rem] h-[18rem] rounded-full bg-accent/5 blur-[100px] sm:w-[24rem] sm:h-[24rem]" />
        </div>
 
       {/* Animated grid background */}
