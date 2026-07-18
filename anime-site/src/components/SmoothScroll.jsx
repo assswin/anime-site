@@ -9,7 +9,9 @@ export default function SmoothScroll({ children }) {
   useEffect(() => {
     // Respect user's preference for reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
+    // Skip Lenis on mobile — native scroll is already smooth and Lenis causes jank
+    const isMobile = window.innerWidth < 768
+    if (prefersReducedMotion || isMobile) return
 
     const lenis = new Lenis({
       duration: 1.2,
